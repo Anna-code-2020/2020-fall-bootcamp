@@ -1,4 +1,7 @@
 # -- TODO: Part 2, write an API client so we are able to query
+import json
+
+
 def get_rate(client_id):
     """
     would expect to return a float rate.
@@ -12,6 +15,8 @@ def get_rate(client_id):
     print(response)
     return response.content
     # Sample end
+
+
 # -- TODO END: Part 2
 
 
@@ -19,7 +24,14 @@ def get_rate(client_id):
 def upsert_client_rate(client_id, rate):
     # call http post - http post call to 127.0.0.1:5000/rate
     import requests
-    response = requests.post()  # what to post?
+    input = {"client_id": "1200", "rate": "0.3"}
+    headers = {'Content-Type': 'application/json'}
+    # response = requests.post("http://127.0.0.1:5000/rate", data=input, headers=headers)  # what to post?
+    response = requests.post("http://127.0.0.1:5000/rate", json=input)
+    print(type(response.text))
+    return response.text
+
+
 # -- TODO END: Part 5
 
 
@@ -29,8 +41,10 @@ def upsert_client_rate(client_id, rate):
 # Please add enough testings. Sample:
 def test_get_rate():
     print(get_rate('client1'))
-    assert get_rate('client1') == 0.2
+    assert float(get_rate('client1')) == 0.2
     # assert get_rate('client0') == 0.0
+
+
 # -- TODO END: Part 3
 
 
@@ -39,6 +53,12 @@ def test_get_rate():
 # -- TODO END: Part 6
 
 # DO NOT DELETE
+def test_post_rate():
+    print(upsert_client_rate('1200', '0.3'))
+    assert upsert_client_rate('1200', '0.3') == '{"client_id":"1200","rate":"0.3"}\n'
+
+
 if __name__ == '__main__':
-    test_get_rate()
+    # test_get_rate()
     # you can add your test functions here
+    test_post_rate()

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask import request
 from flask import json
 
@@ -29,8 +29,9 @@ def get_client_rates():
     import pandas as pd
     df = pd.read_json("client_rate.json")
     return df.to_dict()
-# -- DO NOT EDIT END
 
+
+# -- DO NOT EDIT END
 
 # -- TODO: Part 1 - add an endpoint to get rate by client id
 # When query http://hostname/rate/client1 it would return the rate number for client1 - 0.2
@@ -43,7 +44,10 @@ def get_client_rate(client_id):
     :return: http response
     """
     # How to get the actual rate from client_id?
-    return client_id
+    client_dict = get_client_rates()
+    res = client_dict.get(client_id).get('rate')
+    return str(res)
+
 # -- TODO END: Part 1
 
 
@@ -57,10 +61,18 @@ def upsert_client_rate():
     """
     # We want to update if the client exist in the client_rate.json data
     # Or insert a new client-rate pair into client_rate.json data
-    print(request)
+    print(request.get_json())
+    # user_id = request.form["id"]
+    # rate = request.form["rate"]
+    # update_client_rates(user_id, rate)
 
+    data = request.get_json()
+    print(type(data))
+    user_id = data["client_id"]
+    rate = data["rate"]
     # After getting post request - how to update json file?
-    return request.get_json()
+    update_client_rates(user_id, rate)
+    return data
 
 
 def update_client_rates(client_id, rate):
@@ -74,9 +86,19 @@ def update_client_rates(client_id, rate):
     # check if exist
     # replace or add client rate
     # re-write the file
-    pass
+    import pandas as pd
+    data = get_client_rates()
+    if client_id in data:
+        data[client_id]["rate"] = rate
+    else:
+        data[client_id] = {"rate": rate}
+    #df = pd.DataFrame(data, columns=['client_id', 'rate'])
+    df = pd.DataFrame.from_dict(data)
+    df.to_json('client_rate.json')
+
 # -- TODO END: Part 4
 
 
 if __name__ == "__main__":
-    app.run()
+   app.run()
+
