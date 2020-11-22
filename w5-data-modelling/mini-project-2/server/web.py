@@ -42,6 +42,7 @@ def create_connection(path):
 
     return connection
 
+
 def execute_query(connection, query):
     cursor = connection.cursor()
     try:
@@ -69,6 +70,8 @@ def load_data(database):
     sql_file = open("data.sql")
     sql_as_string = sql_file.read()
     cursor.executescript(sql_as_string)
+
+
 # -- DO NOT EDIT END
 
 
@@ -82,12 +85,15 @@ def get_client_rate(client_id):
     :return: http response
     """
     # How to get the actual rate from client_id?
-    all_clients = get_client_rates()
-    if client_id in all_clients:
-        return str(all_clients[client_id]['rate'])
+    # all_clients = get_client_rates()
+    # if client_id in all_clients:
+    #     return str(all_clients[client_id]['rate'])
     # -- TODO: Part 1, Replace to lookup from database
+    connec = create_connection("test.db")
+    res = execute_read_query(connec, "SELECT rate FROM client_rates WHERE client_id = '{}';".format(client_id))
+    return str(res[0][0])
     # -- TODO END: Part 1
-    return "NOT_FOUND"
+    # return "NOT_FOUND"
 
 
 @app.route("/rate", methods=['POST'])
@@ -113,16 +119,21 @@ def update_client_rates(client_id, rate):
     :return:
     """
     import pandas as pd
-    all_clients = get_client_rates()
-    all_clients[client_id] = {"rate": rate}
-    df = pd.DataFrame.from_dict(all_clients)
-    df.to_json('client_rate.json')
+    # all_clients = get_client_rates()
+    # all_clients[client_id] = {"rate": rate}
+    # df = pd.DataFrame.from_dict(all_clients)
+    # df.to_json('client_rate.json')
     # -- TODO: Part 2, Replace to write to database
+    connec = create_connection("test.db")
+    execute_query(connec, f"INSERT OR IGNORE INTO client_rates(client_id) VALUES('{client_id}');")
+    execute_query(connec, f"UPDATE client_rates SET rate = {rate} WHERE client_id='{client_id}';")
     # -- TODO END: Part 2
+
 
 # -- TODO: Part 3, clean up this file, and remove 'client_rate.json', we should not read/write from file.
 # -- TODO END: Part 3
 
+
 if __name__ == "__main__":
-    load_data(":memory:")
+    load_data("test.db")
     app.run()
